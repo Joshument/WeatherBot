@@ -110,7 +110,7 @@ impl EventHandler for Handler {
                     };
 
                     println!("{:#?}", geocode_response);
-                    if geocode_response.len() != 1 {
+                    if geocode_response.len() > 1 {
                         let mut city_options = String::new();
 
                         for x in geocode_response {
@@ -129,6 +129,16 @@ impl EventHandler for Handler {
                         }).await.expect("Failed to send message!");
 
                         panic!("Ambiguous Location!")
+                    } else if geocode_response.len() == 0 {
+                        command.create_interaction_response(&ctx.http, |response| {
+                            response
+                                .kind(InteractionResponseType::ChannelMessageWithSource)
+                                .interaction_response_data(|message| {
+                                    message.content("Invalid Location!")
+                                })
+                        }).await.expect("Failed to send message!");
+
+                        panic!("Invalid Location!")
                     }
                     
                     // This should never fail, as if it hasn't already failed there would be at least 1 element.
